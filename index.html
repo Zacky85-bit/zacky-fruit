@@ -188,7 +188,18 @@ body { background: radial-gradient(130% 55% at 50% -5%, #226b45 0%, rgba(34, 107
 .hud { display: grid; grid-template-columns: 1fr 1fr; align-items: end; }
 .hud .mid { text-align: right; }
 #game .goals { justify-content: center; }
-@media (prefers-reduced-motion: reduce) { .tile, .face, .sw, .sw i { transition: none; } .face.sp, .sc, .fl, .node.cur { animation: none; } }
+.t6 { background: linear-gradient(160deg, #fff4d6, #ffd36b); } .t7 { background: linear-gradient(160deg, #f1dcc0, #c99a62); }
+.hn { position: absolute; left: 0; top: 0; width: calc(100% / 7); height: calc(100% / 7); transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%)); pointer-events: none; z-index: 1; }
+.hn::before { content: ""; position: absolute; inset: 3%; border-radius: 14px; background: linear-gradient(160deg, rgba(255, 220, 110, 0.5), rgba(240, 150, 20, 0.42)); border: 3px solid rgba(255, 196, 60, 0.95); box-shadow: inset 0 0 12px rgba(255, 170, 0, 0.6), 0 0 8px rgba(255, 170, 0, 0.45); }
+.hn::after { content: ""; position: absolute; left: 14%; top: 9%; width: 30%; height: 12%; border-radius: 50%; background: rgba(255, 255, 255, 0.55); transform: rotate(-18deg); }
+.hn2::before { background: linear-gradient(160deg, rgba(214, 140, 24, 0.55), rgba(150, 84, 12, 0.5)); border: 5px solid #ffd43b; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.45), inset 0 0 16px rgba(255, 180, 0, 0.7), 0 0 10px rgba(255, 170, 0, 0.6); }
+.tile.crate { z-index: 2; cursor: default; }
+.crate-face { background: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35); }
+.crate-face svg { width: 100%; height: 100%; }
+.tile.crate.hit .face { animation: shake 0.26s; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px) rotate(-3deg); } 75% { transform: translateX(4px) rotate(3deg); } }
+.demo .hn { inset: 0; left: 0; top: 0; width: 100%; height: 100%; transform: none; }
+@media (prefers-reduced-motion: reduce) { .tile, .face, .sw, .sw i { transition: none; } .face.sp, .sc, .fl, .node.cur, .tile.crate.hit .face { animation: none; } }
 </style>
 </head>
 <body>
@@ -257,7 +268,7 @@ body { background: radial-gradient(130% 55% at 50% -5%, #226b45 0%, rgba(34, 107
 
 <script>
 var N = 7;
-var NAMES = ["mangues", "ananas", "bananes", "cacao", "noix de coco", "papayes"];
+var NAMES = ["mangues", "ananas", "bananes", "cacao", "noix de coco", "papayes", "miel", "caisses"];
 var ICONS = [
   /* 0 mangue */
   '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="59.5" rx="17" ry="3" fill="#000" opacity=".22"/><path d="M26 9C12 14 6 30 11 43C16 56 33 60 46 52C58 44 60 28 52 18C46 10 36 6 26 9Z" fill="url(#gMangoBase)"/><path d="M26 9C12 14 6 30 11 43C16 56 33 60 46 52C58 44 60 28 52 18C46 10 36 6 26 9Z" fill="url(#gMangoBlush)"/><path d="M27 9c1-4 4-6 7-6" stroke="#5c4a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M34 6c6-4 14-3 18 2-7 4-14 3-18-2z" fill="url(#gLeaf)"/><path d="M36 7c5-1 10 0 14 1" stroke="#1b6b2e" stroke-width="1" fill="none" opacity=".6"/><ellipse cx="21" cy="25" rx="6" ry="11" transform="rotate(25 21 25)" fill="url(#gShine)" opacity=".75"/></svg>',
@@ -270,41 +281,105 @@ var ICONS = [
   /* 4 noix de coco */
   '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="59.5" rx="17" ry="3" fill="#000" opacity=".22"/><circle cx="32" cy="33" r="23" fill="url(#gCoco)"/><g stroke="#3a2210" stroke-width="1" opacity=".35" fill="none"><path d="M14 28c6 2 10 8 10 14M50 26c-6 2-10 8-10 14M22 54c4-6 10-8 16-6M20 18c8 4 16 4 24 0"/></g><circle cx="26" cy="35" r="3.3" fill="#2b170a"/><circle cx="38" cy="35" r="3.3" fill="#2b170a"/><circle cx="32" cy="44" r="3.3" fill="#2b170a"/><ellipse cx="22" cy="21" rx="7" ry="4" transform="rotate(-35 22 21)" fill="url(#gShine)" opacity=".85"/></svg>',
   /* 5 papaye */
-  '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="59.5" rx="17" ry="3" fill="#000" opacity=".22"/><path d="M32 4C18 4 12 20 12 36c0 14 8 24 20 24s20-10 20-24C52 20 46 4 32 4z" fill="url(#gPapSkin)"/><path d="M32 9C21 9 17 22 17 36c0 11 6 19 15 19s15-8 15-19C47 22 43 9 32 9z" fill="url(#gPapFlesh)"/><ellipse cx="32" cy="37" rx="7" ry="11" fill="#d9480f" opacity=".45"/><circle cx="29" cy="30" r="1.9" fill="#2b170a"/><circle cx="35" cy="31" r="1.9" fill="#2b170a"/><circle cx="31" cy="36" r="1.9" fill="#2b170a"/><circle cx="35" cy="39" r="1.9" fill="#2b170a"/><circle cx="29" cy="42" r="1.9" fill="#2b170a"/><circle cx="33" cy="45" r="1.9" fill="#2b170a"/><ellipse cx="23" cy="26" rx="4" ry="10" fill="url(#gShine)" opacity=".7"/></svg>'
+  '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="59.5" rx="17" ry="3" fill="#000" opacity=".22"/><path d="M32 4C18 4 12 20 12 36c0 14 8 24 20 24s20-10 20-24C52 20 46 4 32 4z" fill="url(#gPapSkin)"/><path d="M32 9C21 9 17 22 17 36c0 11 6 19 15 19s15-8 15-19C47 22 43 9 32 9z" fill="url(#gPapFlesh)"/><ellipse cx="32" cy="37" rx="7" ry="11" fill="#d9480f" opacity=".45"/><circle cx="29" cy="30" r="1.9" fill="#2b170a"/><circle cx="35" cy="31" r="1.9" fill="#2b170a"/><circle cx="31" cy="36" r="1.9" fill="#2b170a"/><circle cx="35" cy="39" r="1.9" fill="#2b170a"/><circle cx="29" cy="42" r="1.9" fill="#2b170a"/><circle cx="33" cy="45" r="1.9" fill="#2b170a"/><ellipse cx="23" cy="26" rx="4" ry="10" fill="url(#gShine)" opacity=".7"/></svg>',
+  /* 6 miel */
+  '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="59.5" rx="17" ry="3" fill="#000" opacity=".22"/><path d="M32 6l11 6.4v12.8L32 31.6 21 25.2V12.4z" fill="#ffd43b" stroke="#c77700" stroke-width="2"/><path d="M21 28l11 6.4v12.8L21 53.6 10 47.2V34.4z" fill="#ffc117" stroke="#c77700" stroke-width="2"/><path d="M43 28l11 6.4v12.8L43 53.6 32 47.2V34.4z" fill="#ffb000" stroke="#c77700" stroke-width="2"/><path d="M26 11l4-2" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".8"/></svg>',
+  /* 7 caisse */
+  '<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="7" fill="#b9792f" stroke="#6b3d12" stroke-width="3"/><rect x="9" y="9" width="46" height="46" rx="3" fill="#d29a4f" stroke="#8a5420" stroke-width="2"/><path d="M9 22h46M9 42h46" stroke="#8a5420" stroke-width="2.5"/><path d="M12 12l40 40M52 12L12 52" stroke="#8a5420" stroke-width="5" stroke-linecap="round"/><path d="M12 12l40 40M52 12L12 52" stroke="#e6b873" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#4b2a0c"/><circle cx="52" cy="12" r="2" fill="#4b2a0c"/><circle cx="12" cy="52" r="2" fill="#4b2a0c"/><circle cx="52" cy="52" r="2" fill="#4b2a0c"/></svg>'
 ];
-/* m = coups, g = objectif : type de fruit -> nombre à ramasser */
+var CRACK = '<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="7" fill="#b9792f" stroke="#6b3d12" stroke-width="3"/><rect x="9" y="9" width="46" height="46" rx="3" fill="#d29a4f" stroke="#8a5420" stroke-width="2"/><path d="M9 22h46M9 42h46" stroke="#8a5420" stroke-width="2.5"/><path d="M12 12l40 40M52 12L12 52" stroke="#8a5420" stroke-width="5" stroke-linecap="round"/><path d="M12 12l40 40M52 12L12 52" stroke="#e6b873" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#4b2a0c"/><circle cx="52" cy="12" r="2" fill="#4b2a0c"/><circle cx="12" cy="52" r="2" fill="#4b2a0c"/><circle cx="52" cy="52" r="2" fill="#4b2a0c"/><path d="M30 6l-4 14 8 6-6 12 7 8-3 12" stroke="#2b1606" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/><path d="M30 6l-4 14 8 6-6 12 7 8-3 12" stroke="#fff" stroke-width="1" fill="none" opacity=".35"/></svg>';
+/* t = sortes de fruits, m = coups, g = fruits à ramasser, hn = forme du miel (hv = couches), cr = forme des caisses (ch = coups pour la casser) */
 var LEVELS = [
   { t: 4, m: 15, g: { 0: 12 } },
   { t: 4, m: 18, g: { 0: 12, 1: 12 } },
   { t: 5, m: 18, g: { 2: 15, 3: 12 } },
   { t: 5, m: 20, g: { 1: 15, 4: 15 } },
-  { t: 5, m: 20, g: { 0: 15, 2: 15, 3: 10 } },
-  { t: 5, m: 22, g: { 0: 15, 1: 15, 4: 15 } },
-  { t: 5, m: 22, g: { 2: 20, 3: 20 } },
-  { t: 5, m: 25, g: { 0: 18, 1: 18, 2: 18, 3: 12 } },
-  { t: 5, m: 24, g: { 1: 20, 3: 20, 4: 20 } },
-  { t: 5, m: 26, g: { 0: 15, 1: 15, 2: 15, 3: 15, 4: 15 } },
-  { t: 5, m: 22, g: { 0: 16, 2: 16, 4: 12 } },
-  { t: 5, m: 24, g: { 1: 18, 2: 18, 3: 18 } },
-  { t: 5, m: 22, g: { 0: 20, 3: 20, 4: 20 } },
-  { t: 5, m: 26, g: { 0: 16, 1: 16, 2: 16, 4: 16 } },
-  { t: 6, m: 20, g: { 5: 15 } },
-  { t: 6, m: 22, g: { 5: 14, 0: 14 } },
-  { t: 6, m: 24, g: { 1: 15, 5: 15, 2: 15 } },
-  { t: 6, m: 24, g: { 3: 18, 4: 18, 5: 18 } },
-  { t: 6, m: 26, g: { 0: 16, 1: 16, 2: 16, 3: 16 } },
-  { t: 6, m: 26, g: { 5: 20, 4: 20, 2: 20 } },
-  { t: 6, m: 28, g: { 0: 15, 1: 15, 2: 15, 3: 15, 4: 15 } },
-  { t: 6, m: 28, g: { 5: 18, 0: 18, 3: 18, 1: 18 } },
-  { t: 6, m: 26, g: { 2: 22, 5: 22, 4: 22 } },
-  { t: 6, m: 30, g: { 0: 16, 1: 16, 2: 16, 3: 16, 4: 16 } },
-  { t: 6, m: 30, g: { 5: 20, 1: 20, 3: 20, 0: 20 } },
-  { t: 6, m: 30, g: { 0: 18, 1: 18, 2: 18, 3: 18, 4: 18 } },
-  { t: 6, m: 32, g: { 5: 22, 4: 22, 3: 22, 2: 22 } },
-  { t: 6, m: 32, g: { 0: 20, 1: 20, 2: 20, 3: 20, 4: 20 } },
-  { t: 6, m: 34, g: { 0: 16, 1: 16, 2: 16, 3: 16, 4: 16, 5: 16 } },
-  { t: 6, m: 36, g: { 0: 18, 1: 18, 2: 18, 3: 18, 4: 18, 5: 18 } }
+  { t: 5, m: 16, hn: "center" },
+  { t: 5, m: 16, g: { 1: 12, 4: 12 }, cr: "side4" },
+  { t: 5, m: 16, g: { 3: 14 }, cr: "cen5" },
+  { t: 5, m: 20, hn: "ring2" },
+  { t: 5, m: 21, hn: "cross" },
+  { t: 5, m: 25, hn: "ring2", hv: 2 },
+  { t: 5, m: 36, g: { 0: 12 }, cr: "cc4" },
+  { t: 5, m: 33, hn: "stripes", cr: "cc4" },
+  { t: 5, m: 45, hn: "border" },
+  { t: 5, m: 45, hn: "checker" },
+  { t: 6, m: 28, g: { 5: 15 } },
+  { t: 6, m: 32, hn: "diamond", cr: "side4" },
+  { t: 6, m: 33, hn: "diamond" },
+  { t: 6, m: 35, g: { 5: 15 }, cr: "ring8" },
+  { t: 6, m: 37, g: { 1: 15, 2: 15, 3: 15 }, hn: "plus", cr: "ring8" },
+  { t: 6, m: 39, hn: "top", cr: "row3" },
+  { t: 6, m: 40, g: { 0: 15, 4: 15 }, cr: "x9" },
+  { t: 6, m: 42, g: { 0: 18, 1: 18, 2: 18, 3: 18 } },
+  { t: 6, m: 45, hn: "cols", cr: "top3" },
+  { t: 6, m: 51, hn: "x" },
+  { t: 6, m: 51, hn: "checker", cr: "dia4" },
+  { t: 6, m: 55, hn: "corners", cr: "mid2" },
+  { t: 6, m: 36, g: { 5: 20 }, hn: "top", cr: "row3" },
+  { t: 6, m: 45, hn: "x", cr: "cc4" },
+  { t: 6, m: 40, hn: "diamond", cr: "x9" },
+  { t: 6, m: 42, hn: "cols", cr: "side4" },
+  { t: 6, m: 42, g: { 0: 18, 1: 18, 2: 18, 3: 18, 4: 18, 5: 18 } },
+  { t: 6, m: 45, g: { 5: 20, 4: 20 }, cr: "x9" },
+  { t: 6, m: 45, hn: "ring2", hv: 2, cr: "x9" },
+  { t: 6, m: 40, hn: "top", cr: "cc4" },
+  { t: 6, m: 45, hn: "stripes", cr: "ring8" },
+  { t: 6, m: 45, hn: "top", hv: 2 },
+  { t: 6, m: 50, hn: "diamond", hv: 2 },
+  { t: 6, m: 45, hn: "cross", hv: 2, cr: "cc4" },
+  { t: 6, m: 50, hn: "diamond", hv: 2, cr: "cc4" },
+  { t: 6, m: 55, hn: "bottom", cr: "dia4" }
 ];
+
+/* Formes du miel (cases où le miel est posé) et des caisses (cases bloquées) */
+var HONEY_PATS = {
+  center: function (r, c) { return r >= 2 && r <= 4 && c >= 2 && c <= 4; },
+  cross: function (r, c) { return r === 3 || c === 3; },
+  border: function (r, c) { return r === 0 || c === 0 || r === N - 1 || c === N - 1; },
+  checker: function (r, c) { return (r + c) % 2 === 0; },
+  bottom: function (r) { return r >= 4; },
+  top: function (r) { return r <= 2; },
+  stripes: function (r) { return r % 2 === 1; },
+  cols: function (r, c) { return c % 2 === 1; },
+  x: function (r, c) { return r === c || r + c === N - 1; },
+  diamond: function (r, c) { return Math.abs(r - 3) + Math.abs(c - 3) <= 3; },
+  ring2: function (r, c) { return Math.max(Math.abs(r - 3), Math.abs(c - 3)) === 2; },
+  corners: function (r, c) { return (r < 2 || r > 4) && (c < 2 || c > 4); },
+  plus: function (r, c) { return Math.abs(r - 3) + Math.abs(c - 3) <= 1; },
+  all: function () { return true; }
+};
+var CRATE_PATS = {
+  cc4: [[0, 0], [0, 6], [6, 0], [6, 6]],
+  side4: [[0, 3], [3, 0], [3, 6], [6, 3]],
+  cen5: [[3, 3], [2, 2], [2, 4], [4, 2], [4, 4]],
+  row3: [[3, 1], [3, 3], [3, 5]],
+  dia4: [[1, 3], [3, 1], [3, 5], [5, 3]],
+  top3: [[0, 1], [0, 3], [0, 5]],
+  mid2: [[3, 2], [3, 4]],
+  ring8: [[1, 1], [1, 3], [1, 5], [3, 1], [3, 5], [5, 1], [5, 3], [5, 5]],
+  x9: [[1, 1], [1, 5], [2, 2], [2, 4], [3, 3], [4, 2], [4, 4], [5, 1], [5, 5]]
+};
+function layoutOf(L) {
+  var honey = [], crate = [], r, c;
+  for (r = 0; r < N; r++) { honey[r] = []; crate[r] = []; for (c = 0; c < N; c++) { honey[r][c] = 0; crate[r][c] = 0; } }
+  if (L.cr) CRATE_PATS[L.cr].forEach(function (p) { crate[p[0]][p[1]] = L.ch || 2; });
+  if (L.hn) {
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) {
+      if (HONEY_PATS[L.hn](r, c) && !crate[r][c]) honey[r][c] = L.hv || 1;
+    }
+  }
+  return { honey: honey, crate: crate };
+}
+/* Tous les objectifs d'un niveau : fruits (0 à 5), miel (6), caisses (7) */
+function goalsOf(n) {
+  var L = LEVELS[n - 1], g = {}, lay = layoutOf(L), r, c, h = 0, k = 0;
+  Object.keys(L.g || {}).forEach(function (t) { g[t] = L.g[t]; });
+  for (r = 0; r < N; r++) for (c = 0; c < N; c++) { if (lay.honey[r][c]) h++; if (lay.crate[r][c]) k++; }
+  if (h) g[6] = h;
+  if (k) g[7] = k;
+  return g;
+}
 
 /* ---------- Sons et musique (fabriqués dans le jeu, aucun fichier) ---------- */
 var Snd = (function () {
@@ -433,7 +508,7 @@ var Snd = (function () {
 
 var $ = function (id) { return document.getElementById(id); };
 var board = $("board");
-var grid = [], level = 0, moves = 0, score = 0, goal = [0, 0, 0, 0, 0], goalTypes = [];
+var grid = [], honey = [], honeyEl = [], level = 0, moves = 0, score = 0, goal = [0, 0, 0, 0, 0, 0, 0, 0], goalTypes = [];
 var busy = false, over = false, sel = null, drag = null, toastTimer = null;
 
 function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
@@ -489,6 +564,8 @@ function howModal() {
     '<div class="hw">' + demo("h", 0) + "<span><b>4 fruits alignés</b> : un bonus qui vide une ligne ou une colonne.</span></div>" +
     '<div class="hw">' + demo("b", 1) + "<span><b>5 fruits alignés</b> : un super fruit. Échange-le avec un fruit pour vider tous ceux de la même sorte.</span></div>" +
     '<div class="hw">' + demo("x", 4) + "<span><b>Forme en L ou en T</b> : une explosion autour du fruit.</span></div>" +
+    '<div class="hw"><div class="demo"><div class="face t0">' + ICONS[0] + '</div><div class="hn hn1"></div></div><span><b>Miel</b> : fais un alignement sur la case pour le nettoyer. Le miel épais demande deux alignements.</span></div>' +
+    '<div class="hw"><div class="demo"><div class="face crate-face">' + ICONS[7] + '</div></div><span><b>Caisse</b> : elle ne bouge pas. Fais un alignement juste à côté pour la casser.</span></div>' +
     '<div class="hw"><span>Ramasse les fruits demandés avant la fin des coups pour gagner jusqu\'à 3 étoiles.</span></div>' +
     '</div><button class="btn btn-main" id="ok" type="button">Compris</button>');
   $("ok").onclick = closeModal;
@@ -504,11 +581,11 @@ function pauseModal() {
   $("qt").onclick = function () { over = true; showLevels(); };
 }
 function preLevel(n) {
-  var L = LEVELS[n - 1], st = getStars()[n] || 0, g = "";
-  Object.keys(L.g).forEach(function (k) {
-    g += '<div class="chip"><div class="mini t' + k + '">' + ICONS[k] + "</div><span>" + L.g[k] + "</span></div>";
+  var L = LEVELS[n - 1], st = getStars()[n] || 0, g = "", GO = goalsOf(n);
+  Object.keys(GO).forEach(function (k) {
+    g += '<div class="chip"><div class="mini t' + k + '">' + ICONS[k] + "</div><span>" + GO[k] + "</span></div>";
   });
-  openModal("<h2>Niveau " + n + "</h2>" + starsHtml(st) + '<p class="small">Ramasse</p><div class="goals">' + g + '</div><p class="lead">en ' + L.m + ' coups</p>' +
+  openModal("<h2>Niveau " + n + "</h2>" + starsHtml(st) + '<p class="small">Objectif</p><div class="goals">' + g + '</div><p class="lead">en ' + L.m + ' coups</p>' +
     '<button class="btn btn-main" id="go" type="button">Jouer</button><button class="btn btn-alt" id="cl" type="button">Fermer</button>');
   $("go").onclick = function () { startLevel(n); };
   $("cl").onclick = closeModal;
@@ -578,11 +655,27 @@ function makeTile(type, r, c, spawnRow) {
   place(t, r, c);
   return t;
 }
+function makeCrate(r, c, hp, spawnRow) {
+  var el = document.createElement("div");
+  el.className = "tile crate";
+  el.innerHTML = '<div class="face crate-face">' + (hp > 1 ? ICONS[7] : CRACK) + "</div>";
+  var t = { type: -1, r: r, c: c, el: el, sp: null, crate: hp };
+  el._t = t;
+  el.style.setProperty("--r", spawnRow);
+  el.style.setProperty("--c", c);
+  board.appendChild(el);
+  void el.offsetWidth;
+  place(t, r, c);
+  return t;
+}
 function setType(t, type) {
   t.type = type;
   t.el.firstChild.className = "face t" + type;
   t.el.firstChild.innerHTML = ICONS[type];
 }
+/* Sorte du fruit d'une case, ou -1 si la case est vide ou une caisse (une caisse ne s'aligne jamais) */
+function T(r, c) { var t = grid[r][c]; return t && !t.crate ? t.type : -1; }
+function isFruit(r, c) { var t = grid[r][c]; return !!t && !t.crate; }
 
 function findMatches() {
   var cells = {}, groups = [], runs = [], r, c, k, j, i, cs;
@@ -590,7 +683,7 @@ function findMatches() {
     c = 0;
     while (c < N) {
       k = c;
-      while (k < N && grid[r][k] && grid[r][c] && grid[r][k].type === grid[r][c].type) k++;
+      while (k < N && T(r, c) >= 0 && T(r, k) === T(r, c)) k++;
       if (k - c >= 3) {
         cs = [];
         for (j = c; j < k; j++) { cells[r * N + j] = true; cs.push([r, j]); }
@@ -603,7 +696,7 @@ function findMatches() {
     r = 0;
     while (r < N) {
       k = r;
-      while (k < N && grid[k][c] && grid[r][c] && grid[k][c].type === grid[r][c].type) k++;
+      while (k < N && T(r, c) >= 0 && T(k, c) === T(r, c)) k++;
       if (k - r >= 3) {
         cs = [];
         for (i = r; i < k; i++) { cells[i * N + c] = true; cs.push([i, c]); }
@@ -620,35 +713,55 @@ function hasMoves() {
   for (var r0 = 0; r0 < N; r0++) for (var c0 = 0; c0 < N; c0++) if (grid[r0][c0] && grid[r0][c0].sp) return true;
   for (var r = 0; r < N; r++) {
     for (var c = 0; c < N; c++) {
-      if (c < N - 1) { swapRefs(r, c, r, c + 1); var a = hasMatch(); swapRefs(r, c, r, c + 1); if (a) return true; }
-      if (r < N - 1) { swapRefs(r, c, r + 1, c); var b = hasMatch(); swapRefs(r, c, r + 1, c); if (b) return true; }
+      if (!isFruit(r, c)) continue;
+      if (c < N - 1 && isFruit(r, c + 1)) { swapRefs(r, c, r, c + 1); var a = hasMatch(); swapRefs(r, c, r, c + 1); if (a) return true; }
+      if (r < N - 1 && isFruit(r + 1, c)) { swapRefs(r, c, r + 1, c); var b = hasMatch(); swapRefs(r, c, r + 1, c); if (b) return true; }
     }
   }
   return false;
 }
 function reshuffle() {
   var tiles = [], r, c, tries = 0;
-  for (r = 0; r < N; r++) for (c = 0; c < N; c++) tiles.push(grid[r][c]);
+  for (r = 0; r < N; r++) for (c = 0; c < N; c++) { if (isFruit(r, c)) tiles.push(grid[r][c]); }
   do {
-    var types = tiles.map(function (t) { return t.type; });
-    for (var i = types.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = types[i]; types[i] = types[j]; types[j] = x; }
-    tiles.forEach(function (t, idx) { t.type = types[idx]; });
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) {
+      var t0 = grid[r][c], ty;
+      if (!t0 || t0.crate) continue;
+      do { ty = rand(); } while ((c >= 2 && T(r, c - 1) === ty && T(r, c - 2) === ty) || (r >= 2 && T(r - 1, c) === ty && T(r - 2, c) === ty));
+      t0.type = ty;
+    }
     tries++;
-  } while ((hasMatch() || !hasMoves()) && tries < 200);
+  } while (!hasMoves() && tries < 300);
   tiles.forEach(function (t) { setType(t, t.type); });
 }
 
-function newBoard() {
+function honeyClass(v) { return "hn hn" + (v > 1 ? 2 : 1); }
+function newBoard(L) {
   board.innerHTML = "";
-  grid = [];
-  var r, c, type;
+  grid = []; honey = []; honeyEl = [];
+  var lay = layoutOf(L), r, c, type;
+  for (r = 0; r < N; r++) {
+    honey[r] = []; honeyEl[r] = [];
+    for (c = 0; c < N; c++) {
+      honey[r][c] = lay.honey[r][c];
+      honeyEl[r][c] = null;
+      if (honey[r][c]) {
+        var hd = document.createElement("div");
+        hd.className = honeyClass(honey[r][c]);
+        hd.style.setProperty("--r", r); hd.style.setProperty("--c", c);
+        board.appendChild(hd);
+        honeyEl[r][c] = hd;
+      }
+    }
+  }
   for (r = 0; r < N; r++) {
     grid[r] = [];
     for (c = 0; c < N; c++) {
+      if (lay.crate[r][c]) { grid[r][c] = makeCrate(r, c, lay.crate[r][c], r - N); continue; }
       do {
         type = rand();
-      } while ((c >= 2 && grid[r][c - 1].type === type && grid[r][c - 2].type === type) ||
-               (r >= 2 && grid[r - 1][c].type === type && grid[r - 2][c].type === type));
+      } while ((c >= 2 && T(r, c - 1) === type && T(r, c - 2) === type) ||
+               (r >= 2 && T(r - 1, c) === type && T(r - 2, c) === type));
       grid[r][c] = makeTile(type, r, c, r - N);
     }
   }
@@ -662,13 +775,14 @@ function startLevel(n) {
   level = n; var L = LEVELS[n - 1];
   moves = L.m; score = 0; over = false; sel = null; busy = true;
   NT = L.t || 5;
-  goal = [0, 0, 0, 0, 0, 0]; goalTypes = [];
-  Object.keys(L.g).forEach(function (k) { goal[k] = L.g[k]; goalTypes.push(parseInt(k, 10)); });
+  goal = [0, 0, 0, 0, 0, 0, 0, 0]; goalTypes = [];
+  var GO = goalsOf(n);
+  Object.keys(GO).forEach(function (k) { goal[k] = GO[k]; goalTypes.push(parseInt(k, 10)); });
   show("game");
   $("over").hidden = true;
   Snd.play("start");
   $("lvtitle").textContent = "Niveau " + n;
-  newBoard(); hud();
+  newBoard(L); hud();
   wait(550).then(function () { busy = false; });
 }
 
@@ -697,6 +811,7 @@ function swapTiles(a, b) {
 }
 function adjacent(a, b) { return Math.abs(a.r - b.r) + Math.abs(a.c - b.c) === 1; }
 function tap(t) {
+  if (t.crate) return;
   if (!sel) { select(t); return; }
   if (sel === t) { clearSel(); return; }
   if (adjacent(sel, t)) { trySwap(sel, t); return; }
@@ -704,7 +819,7 @@ function tap(t) {
 }
 
 async function trySwap(a, b) {
-  if (busy || over || !a || !b) return;
+  if (busy || over || !a || !b || a.crate || b.crate) return;
   busy = true; clearSel();
   var gid = gameId;
   Snd.play("swap");
@@ -732,10 +847,11 @@ async function trySwap(a, b) {
 }
 
 /* Bonus : 4 fruits alignés = ligne ou colonne, 5 fruits = super fruit, forme en L ou T = explosion 3x3 */
-var rem, queue, madeAt;
+var rem, queue, madeAt, hitSet;
 function add(r, c) {
   if (r < 0 || c < 0 || r >= N || c >= N) return;
   var t = grid[r][c], k = r * N + c;
+  if (t && t.crate) { hitSet[k] = true; return; }
   if (!t || rem[k] || madeAt[k]) return;
   rem[k] = t;
   if (t.sp) queue.push(t);
@@ -759,7 +875,7 @@ async function resolve(forced, swapped) {
   var combo = 0, rank = { h: 1, v: 1, x: 2, b: 3 }, gid = gameId;
   while (true) {
     var res = findMatches();
-    rem = {}; queue = []; madeAt = {};
+    rem = {}; queue = []; madeAt = {}; hitSet = {};
     var inH = {}, inV = {};
     res.runs.forEach(function (run) {
       run.cells.forEach(function (p) { (run.dir === "h" ? inH : inV)[p[0] * N + p[1]] = true; });
@@ -799,12 +915,41 @@ async function resolve(forced, swapped) {
     var pts = keys.length * 10 + activated * 40;
     res.groups.forEach(function (g) { if (g > 3) pts += (g - 3) * 20; });
     score += pts * combo;
-    var popped = [];
+    var popped = [], bonus = 0, brokeCrate = false, clearedHoney = false;
     keys.forEach(function (k) {
       var t = rem[k];
       if (goal[t.type] > 0) goal[t.type]--;
+      if (honey[t.r][t.c] > 0) {
+        honey[t.r][t.c]--;
+        var he = honeyEl[t.r][t.c];
+        if (honey[t.r][t.c] <= 0) {
+          if (he && he.parentNode) he.parentNode.removeChild(he);
+          honeyEl[t.r][t.c] = null;
+          if (goal[6] > 0) goal[6]--;
+          bonus += 30; clearedHoney = true;
+        } else if (he) { he.className = honeyClass(honey[t.r][t.c]); }
+      }
+      [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(function (d) {
+        var rr = t.r + d[0], cc = t.c + d[1];
+        if (rr >= 0 && cc >= 0 && rr < N && cc < N && grid[rr][cc] && grid[rr][cc].crate) hitSet[rr * N + cc] = true;
+      });
       t.el.classList.add("pop"); popped.push(t.el); grid[t.r][t.c] = null;
     });
+    Object.keys(hitSet).forEach(function (k) {
+      var cr = grid[Math.floor(k / N)][k % N];
+      if (!cr || !cr.crate) return;
+      cr.crate--;
+      if (cr.crate <= 0) {
+        cr.el.classList.add("pop"); popped.push(cr.el); grid[cr.r][cr.c] = null;
+        if (goal[7] > 0) goal[7]--;
+        bonus += 50; brokeCrate = true;
+      } else {
+        cr.el.firstChild.innerHTML = CRACK;
+        cr.el.classList.add("hit");
+        (function (el) { setTimeout(function () { el.classList.remove("hit"); }, 300); })(cr.el);
+      }
+    });
+    score += bonus;
     var made = Object.keys(madeAt);
     made.forEach(function (k) {
       var t = grid[Math.floor(k / N)][k % N];
@@ -812,7 +957,9 @@ async function resolve(forced, swapped) {
     });
     Snd.pop(combo, activated > 0 || res.groups.some(function (g) { return g >= 4; }));
     if (made.length || activated) Snd.play("bonus");
-    if (activated) toast("Boom !");
+    if (brokeCrate) toast("Caisse cassée !");
+    else if (clearedHoney) toast("Miel nettoyé !");
+    else if (activated) toast("Boom !");
     else if (made.length) toast("Bonus !");
     else if (combo > 1) toast("Combo x" + combo + " !");
     hud();
@@ -820,15 +967,23 @@ async function resolve(forced, swapped) {
     if (gid !== gameId) return;
     popped.forEach(function (el) { if (el.parentNode) el.parentNode.removeChild(el); });
     for (var c = 0; c < N; c++) {
-      var w = N - 1, r;
-      for (r = N - 1; r >= 0; r--) {
-        if (grid[r][c]) {
-          if (r !== w) { var t2 = grid[r][c]; grid[w][c] = t2; grid[r][c] = null; place(t2, w, c); }
-          w--;
+      /* Les caisses ne tombent pas : chaque colonne est coupée en morceaux entre les caisses */
+      var r = N - 1;
+      while (r >= 0) {
+        if (grid[r][c] && grid[r][c].crate) { r--; continue; }
+        var top = r;
+        while (top - 1 >= 0 && !(grid[top - 1][c] && grid[top - 1][c].crate)) top--;
+        var w = r, i;
+        for (i = r; i >= top; i--) {
+          if (grid[i][c]) {
+            if (i !== w) { var t2 = grid[i][c]; grid[w][c] = t2; grid[i][c] = null; place(t2, w, c); }
+            w--;
+          }
         }
+        var empty = w - top + 1;
+        for (i = w; i >= top; i--) grid[i][c] = makeTile(rand(), i, c, top > 0 ? Math.max(i - empty, top - 1) : i - empty);
+        r = top - 1;
       }
-      var empty = w + 1;
-      for (r = w; r >= 0; r--) grid[r][c] = makeTile(rand(), r, c, r - empty);
     }
     forced = null; swapped = null;
     await wait(300);
@@ -867,7 +1022,7 @@ function endGame(win) {
 board.addEventListener("pointerdown", function (e) {
   if (busy || over) return;
   var el = e.target.closest(".tile");
-  if (!el || !el._t) return;
+  if (!el || !el._t || el._t.crate) return;
   drag = { t: el._t, x: e.clientX, y: e.clientY, done: false };
   try { board.setPointerCapture(e.pointerId); } catch (err) {}
 });
