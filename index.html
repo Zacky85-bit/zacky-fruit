@@ -118,6 +118,24 @@ p { margin: 0; }
 .rules b { font-weight: 700; }
 body { background: radial-gradient(130% 55% at 50% -5%, #226b45 0%, rgba(34, 107, 69, 0) 70%), var(--bg); background-attachment: fixed; }
 .btn { transition: transform 0.08s; }
+#app { position: relative; z-index: 1; }
+#deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#deco svg { position: absolute; left: 0; width: 100%; height: auto; }
+#deco .bot { bottom: 0; }
+#deco .top { top: 0; }
+body.th1 { --bg: #06222b; background: radial-gradient(130% 55% at 50% -5%, #1c8394 0%, rgba(28, 131, 148, 0) 70%), var(--bg); background-attachment: fixed; }
+body.th2 { --bg: #2a1030; background: radial-gradient(130% 60% at 50% 105%, #d9582b 0%, rgba(217, 88, 43, 0) 65%), radial-gradient(130% 50% at 50% -5%, #6b2a63 0%, rgba(107, 42, 99, 0) 70%), var(--bg); background-attachment: fixed; }
+body.th3 { --bg: #070b24; background: radial-gradient(130% 55% at 50% -5%, #2b3a8c 0%, rgba(43, 58, 140, 0) 70%), var(--bg); background-attachment: fixed; }
+.hbar { z-index: 3; position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.lives { display: inline-flex; align-items: center; gap: 6px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lives .hrt { color: #ff5a6a; font-size: 1.2rem; line-height: 1; }
+.lives small { font-weight: 600; color: var(--muted, #b8cbbf); font-size: 0.78rem; }
+.gift { border: 0; border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 800; color: #3a1d00; background: linear-gradient(180deg, #ffbf47, #ff9a2e); box-shadow: 0 3px 0 #b85c00; cursor: pointer; }
+.gift.off { background: rgba(255, 255, 255, 0.12); color: #b8cbbf; box-shadow: none; }
+.gift.ready { animation: giftp 1.2s ease-in-out infinite; }
+@keyframes giftp { 50% { transform: scale(1.07); } }
+.bigheart { font-size: 3rem; line-height: 1; color: #ff5a6a; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.3); }
+@media (prefers-reduced-motion: reduce) { .gift.ready { animation: none; } }
 .btn:active { transform: translateY(3px); }
 .btn-main { background: linear-gradient(180deg, #ffbf47, #ff9a2e); box-shadow: 0 4px 0 #b85c00; }
 .btn-green { background: linear-gradient(180deg, #5ad48a, #3fbf75); box-shadow: 0 4px 0 #1f7a47; }
@@ -238,8 +256,10 @@ body { background: radial-gradient(130% 55% at 50% -5%, #226b45 0%, rgba(34, 107
 <clipPath id="pc"><ellipse cx="32" cy="40" rx="17" ry="20"/></clipPath>
 </defs></svg>
 
+<div id="deco" aria-hidden="true"></div>
 <main id="app">
   <section id="home" class="home">
+    <div class="hbar"><span class="lives" id="hLives"></span><button class="gift" id="gift" type="button"></button></div>
     <div class="fl fl1 mini t2" id="fl1" aria-hidden="true"></div>
     <div class="fl fl2 mini t0" id="fl2" aria-hidden="true"></div>
     <div class="logo"><span class="logo-a">Z'acky</span><span class="logo-b">FRUIT</span></div>
@@ -608,7 +628,7 @@ function preLevel(n) {
   Object.keys(GO).forEach(function (k) {
     g += '<div class="chip"><div class="mini t' + k + '">' + ICONS[k] + "</div><span>" + GO[k] + "</span></div>";
   });
-  openModal("<h2>Niveau " + n + "</h2>" + starsHtml(st) + '<p class="small">Objectif</p><div class="goals">' + g + '</div><p class="lead">en ' + L.m + ' coups</p>' +
+  openModal("<h2>Niveau " + n + "</h2>" + starsHtml(st) + '<p class="small">Objectif</p><div class="goals">' + g + '</div><p class="lead">en ' + L.m + ' coups</p><p class="small">Vies : ' + livesHtml() + '</p>' +
     '<button class="btn btn-main" id="go" type="button">Jouer</button><button class="btn btn-alt" id="cl" type="button">Fermer</button>');
   $("go").onclick = function () { startLevel(n); };
   $("cl").onclick = closeModal;
@@ -617,6 +637,8 @@ function preLevel(n) {
 function home() {
   clearHint(); FX.clear();
   closeModal(); show("home");
+  setTheme(unlocked());
+  updateHomeBar();
   $("playsub").textContent = "Niveau " + unlocked();
   $("starTot").textContent = totalStars();
   $("starMax").textContent = LEVELS.length * 3;
@@ -625,6 +647,7 @@ function home() {
 function showLevels() {
   clearHint(); FX.clear();
   closeModal(); show("levels");
+  setTheme(unlocked());
   var u = unlocked(), st = getStars(), n = LEVELS.length, gap = 96, H = (n - 1) * gap + 150;
   var pts = [], d = "", nodes = "", i, k;
   for (i = 1; i <= n; i++) pts.push([50 + 28 * Math.sin((i - 1) * 1.15), H - 75 - (i - 1) * gap]);
@@ -657,6 +680,8 @@ function initMenu() {
   $("showcase").innerHTML = order.map(function (t, k) { return '<div class="sc sc' + k + " mini t" + t + '">' + ICONS[t] + "</div>"; }).join("");
   $("fl1").innerHTML = ICONS[2]; $("fl2").innerHTML = ICONS[0];
   $("play").onclick = function () { preLevel(unlocked()); };
+  $("gift").onclick = giftModal;
+  setInterval(updateHomeBar, 1000);
   $("bLevels").onclick = showLevels;
   $("bHow").onclick = howModal;
   $("bSet").onclick = settingsModal;
@@ -963,8 +988,94 @@ function armHint() {
   }, 7000);
 }
 
+/* ---------- Vies et cadeau du jour ---------- */
+var MAXV = 5, REGEN = 20 * 60 * 1000, GIFTV = 3;
+function lvRead() {
+  var o = null;
+  try { o = JSON.parse(localStorage.getItem("fruitsci-vies") || "null"); } catch (e) {}
+  if (!o || typeof o.n !== "number") o = { n: MAXV, t: 0 };
+  return o;
+}
+function lvSave(o) { try { localStorage.setItem("fruitsci-vies", JSON.stringify(o)); } catch (e) {} }
+function lives() {
+  var o = lvRead(), now = Date.now();
+  if (o.n >= MAXV) { if (o.t) { o.t = 0; lvSave(o); } return o; }
+  if (!o.t || o.t > now) { o.t = now; lvSave(o); return o; }
+  var k = Math.floor((now - o.t) / REGEN);
+  if (k > 0) { o.n = Math.min(MAXV, o.n + k); o.t = o.n >= MAXV ? 0 : o.t + k * REGEN; lvSave(o); }
+  return o;
+}
+function loseLife() {
+  var o = lives();
+  if (o.n > 0) { o.n--; if (o.n < MAXV && !o.t) o.t = Date.now(); lvSave(o); }
+}
+function mmss(ms) { var t = Math.max(0, Math.ceil(ms / 1000)), m = Math.floor(t / 60), x = t % 60; return m + ":" + (x < 10 ? "0" : "") + x; }
+function nextLife() { var o = lives(); return o.n < MAXV && o.t ? REGEN - (Date.now() - o.t) : 0; }
+function todayKey() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+function giftReady() { try { return localStorage.getItem("fruitsci-cadeau") !== todayKey(); } catch (e) { return true; } }
+function claimGift() {
+  if (!giftReady()) return false;
+  try { localStorage.setItem("fruitsci-cadeau", todayKey()); } catch (e) {}
+  var o = lives(); o.n = Math.min(9, o.n + GIFTV); if (o.n >= MAXV) o.t = 0; lvSave(o);
+  return true;
+}
+function livesHtml() {
+  var o = lives(), nx = nextLife();
+  return '<span class="hrt">♥</span> ' + o.n + (nx > 0 ? ' <small>' + mmss(nx) + "</small>" : "");
+}
+function updateHomeBar() {
+  if (!$("home") || $("home").hidden) return;
+  $("hLives").innerHTML = livesHtml();
+  var g = $("gift"), ok = giftReady();
+  g.className = "gift" + (ok ? " ready" : " off");
+  g.textContent = ok ? "Cadeau du jour" : "Cadeau demain";
+}
+function giftModal() {
+  if (giftReady()) {
+    claimGift(); Snd.play("win");
+    openModal('<div class="bigheart">♥</div><h2>Cadeau du jour !</h2><p class="lead">Tu gagnes ' + GIFTV + ' vies. Reviens demain pour un autre cadeau.</p><button class="btn btn-main" id="ok" type="button">Super</button>');
+    $("ok").onclick = function () { closeModal(); updateHomeBar(); };
+  } else {
+    openModal("<h2>Cadeau déjà pris</h2><p class=\"lead\">Reviens demain pour un nouveau cadeau.</p><button class=\"btn btn-main\" id=\"ok\" type=\"button\">OK</button>");
+    $("ok").onclick = closeModal;
+  }
+}
+var noLivesTimer = 0;
+function noLivesModal(n) {
+  var ok = giftReady();
+  openModal('<div class="bigheart">♡</div><h2>Plus de vies</h2><p class="lead">Prochaine vie dans <b id="nlt">' + mmss(nextLife()) + "</b></p>" +
+    (ok ? '<button class="btn btn-main" id="gf" type="button">Prendre le cadeau du jour</button>' : "") +
+    '<button class="btn btn-alt" id="cl" type="button">Fermer</button>');
+  if ($("gf")) $("gf").onclick = function () { claimGift(); Snd.play("win"); closeModal(); startLevel(n); };
+  $("cl").onclick = function () { clearInterval(noLivesTimer); closeModal(); };
+  clearInterval(noLivesTimer);
+  noLivesTimer = setInterval(function () {
+    if ($("modal").hidden || !$("nlt")) { clearInterval(noLivesTimer); return; }
+    if (lives().n > 0) { clearInterval(noLivesTimer); closeModal(); startLevel(n); return; }
+    $("nlt").textContent = mmss(nextLife());
+  }, 1000);
+}
+
+/* ---------- Décors par niveaux ---------- */
+var THEMES = [
+  { name: "La jungle", deco: '<svg class="bot" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M0 220V120C30 100 55 70 90 60c-25 25-30 45-25 60 20-25 45-40 70-45-20 20-28 40-25 60 15-15 30-22 50-24V220z" fill="#0c3a22" opacity=".85"/><path d="M400 220V110c-30-18-55-48-92-58 25 25 32 45 27 60-20-25-45-40-72-45 20 20 28 40 25 60-15-15-30-22-50-24V220z" fill="#0c3a22" opacity=".85"/><circle cx="330" cy="40" r="30" fill="#ffe08a" opacity=".12"/></svg>' },
+  { name: "La plage", deco: '<svg class="top" viewBox="0 0 400 220" preserveAspectRatio="xMaxYMin slice"><circle cx="330" cy="150" r="42" fill="#ffe08a" opacity=".28"/><circle cx="330" cy="150" r="26" fill="#fff3bf" opacity=".5"/></svg><svg class="bot" viewBox="0 0 400 140" preserveAspectRatio="xMidYMax slice"><path d="M0 70c40-20 80 20 130 0s90-20 140 0 90 20 130 0V140H0z" fill="#0f6b7c" opacity=".55"/><path d="M0 100c50-18 90 16 140 0s100-18 150 0 80 14 110 0V140H0z" fill="#f2d9a0" opacity=".35"/></svg>' },
+  { name: "Le marché d'Abidjan", deco: '<svg class="bot" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice"><circle cx="200" cy="200" r="90" fill="#ffb347" opacity=".35"/><path d="M0 200V150h24v-30h22v30h18V100h26v50h20v-38h24v38h16V130h28v20h14V90h30v60h18v-28h22v28h20v-44h26v44h20V200z" fill="#1d0a22" opacity=".8"/></svg>' },
+  { name: "La nuit étoilée", deco: '<svg class="top" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice"><circle cx="330" cy="150" r="22" fill="#fff3bf" opacity=".85"/><circle cx="340" cy="143" r="20" fill="#0b1240"/><g fill="#fff"><circle cx="40" cy="40" r="1.6" opacity=".8"/><circle cx="90" cy="90" r="1.2" opacity=".6"/><circle cx="150" cy="30" r="1.8" opacity=".9"/><circle cx="210" cy="110" r="1.2" opacity=".5"/><circle cx="260" cy="45" r="1.5" opacity=".7"/><circle cx="60" cy="160" r="1.3" opacity=".5"/><circle cx="360" cy="150" r="1.6" opacity=".7"/><circle cx="130" cy="200" r="1.1" opacity=".4"/><circle cx="290" cy="230" r="1.4" opacity=".5"/><circle cx="20" cy="250" r="1.4" opacity=".5"/></g></svg>' }
+];
+var curTheme = -1;
+function themeOf(n) { return Math.min(THEMES.length - 1, Math.floor((n - 1) / 10)); }
+function setTheme(n) {
+  var k = themeOf(n);
+  if (k === curTheme) return;
+  curTheme = k;
+  if (document.body) document.body.className = k ? "th" + k : "";
+  $("deco").innerHTML = THEMES[k].deco;
+}
+
 /* ---------- Partie ---------- */
 function startLevel(n) {
+  if (lives().n <= 0) { noLivesModal(n); return; }
   closeModal();
   gameId++;
   level = n; var L = LEVELS[n - 1];
@@ -974,12 +1085,14 @@ function startLevel(n) {
   var GO = goalsOf(n);
   Object.keys(GO).forEach(function (k) { goal[k] = GO[k]; goalTypes.push(parseInt(k, 10)); });
   show("game");
+  setTheme(n);
   $("over").hidden = true;
   FX.clear(); clearHint();
   Snd.play("start");
   $("lvtitle").textContent = "Niveau " + n;
   newBoard(L); hud();
   wait(550).then(function () { busy = false; armHint(); });
+  if (n % 10 === 1 && n > 1 && !(getStars()[n])) wait(700).then(function () { if (!over && level === n) toast("Nouveau décor : " + THEMES[themeOf(n)].name); });
 }
 
 function hud() {
@@ -1221,6 +1334,7 @@ function endGame(win) {
   over = true;
   clearHint();
   Snd.play(win ? "win" : "lose");
+  if (!win) loseLife();
   var L = LEVELS[level - 1], box = "", gid = gameId, stars = 0;
   if (win) {
     var ratio = moves / L.m;
@@ -1247,7 +1361,7 @@ function endGame(win) {
       if (goal[t] > 0) left += '<div class="chip" title="' + NAMES[t] + '"><div class="mini t' + t + '">' + ICONS[t] + "</div><span>" + goal[t] + "</span></div>";
     });
     box = '<div class="box"><h2>Dommage !</h2><p class="lead">Il te manquait encore :</p><div class="goals">' + left + "</div>" +
-      '<button class="btn btn-main" id="rt" type="button">Réessayer</button><button class="btn btn-alt" id="mn" type="button">Niveaux</button></div>';
+      '<p class="small">Vies : ' + livesHtml() + '</p><button class="btn btn-main" id="rt" type="button">Réessayer</button><button class="btn btn-alt" id="mn" type="button">Niveaux</button></div>';
   }
   $("over").innerHTML = box; $("over").hidden = false;
   if ($("nx")) $("nx").onclick = function () { startLevel(level + 1); };
