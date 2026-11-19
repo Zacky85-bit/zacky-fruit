@@ -125,6 +125,8 @@ body { background: radial-gradient(130% 55% at 50% -5%, #226b45 0%, rgba(34, 107
 #deco .top { top: 0; }
 body.th1 { --bg: #06222b; background: radial-gradient(130% 55% at 50% -5%, #1c8394 0%, rgba(28, 131, 148, 0) 70%), var(--bg); background-attachment: fixed; }
 body.th2 { --bg: #2a1030; background: radial-gradient(130% 60% at 50% 105%, #d9582b 0%, rgba(217, 88, 43, 0) 65%), radial-gradient(130% 50% at 50% -5%, #6b2a63 0%, rgba(107, 42, 99, 0) 70%), var(--bg); background-attachment: fixed; }
+body.th4 { --bg: #2a1a05; background: radial-gradient(130% 60% at 50% 105%, #e8a317 0%, rgba(232, 163, 23, 0) 65%), radial-gradient(130% 50% at 50% -5%, #7a4a12 0%, rgba(122, 74, 18, 0) 70%), var(--bg); background-attachment: fixed; }
+body.th5 { --bg: #061a2e; background: radial-gradient(130% 55% at 50% -5%, #6fc3e8 0%, rgba(111, 195, 232, 0) 70%), var(--bg); background-attachment: fixed; }
 body.th3 { --bg: #070b24; background: radial-gradient(130% 55% at 50% -5%, #2b3a8c 0%, rgba(43, 58, 140, 0) 70%), var(--bg); background-attachment: fixed; }
 .hbar { z-index: 3; position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .lives { display: inline-flex; align-items: center; gap: 6px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -212,6 +214,11 @@ body.th3 { --bg: #070b24; background: radial-gradient(130% 55% at 50% -5%, #2b3a
 .hn::after { content: ""; position: absolute; left: 14%; top: 9%; width: 30%; height: 12%; border-radius: 50%; background: rgba(255, 255, 255, 0.55); transform: rotate(-18deg); }
 .hn2::before { background: linear-gradient(160deg, rgba(214, 140, 24, 0.55), rgba(150, 84, 12, 0.5)); border: 5px solid #ffd43b; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.45), inset 0 0 16px rgba(255, 180, 0, 0.7), 0 0 10px rgba(255, 170, 0, 0.6); }
 .tile.crate { z-index: 2; cursor: default; }
+.tile.ice { cursor: default; }
+.tile.ice::after { content: ""; position: absolute; inset: 3%; border-radius: 14px; pointer-events: none; background: linear-gradient(150deg, rgba(225, 248, 255, 0.72), rgba(120, 200, 245, 0.5) 60%, rgba(190, 235, 255, 0.62)); border: 3px solid rgba(235, 252, 255, 0.95); box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.9), 0 0 9px rgba(120, 210, 255, 0.7); }
+.tile.ice::before { content: ""; position: absolute; left: 16%; top: 12%; width: 32%; height: 10%; border-radius: 50%; background: rgba(255, 255, 255, 0.85); transform: rotate(-20deg); z-index: 3; pointer-events: none; }
+.ice-demo { position: absolute; inset: 3%; border-radius: 14px; background: linear-gradient(150deg, rgba(225, 248, 255, 0.72), rgba(120, 200, 245, 0.5)); border: 3px solid rgba(235, 252, 255, 0.95); box-shadow: inset 0 0 10px #fff; }
+.t8 { background: linear-gradient(160deg, #eafaff, #8fd3f4); }
 .crate-face { background: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35); }
 .crate-face svg { width: 100%; height: 100%; }
 .tile.crate.hit .face { animation: shake 0.26s; }
@@ -309,7 +316,7 @@ body.th3 { --bg: #070b24; background: radial-gradient(130% 55% at 50% -5%, #2b3a
 
 <script>
 var N = 7;
-var NAMES = ["mangues", "ananas", "bananes", "cacao", "noix de coco", "papayes", "miel", "caisses"];
+var NAMES = ["mangues", "ananas", "bananes", "cacao", "noix de coco", "papayes", "miel", "caisses", "glaçons"];
 var ICONS = [
   /* 0 mangue */
   '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="59.5" rx="17" ry="3" fill="#000" opacity=".22"/><path d="M26 9C12 14 6 30 11 43C16 56 33 60 46 52C58 44 60 28 52 18C46 10 36 6 26 9Z" fill="url(#gMangoBase)"/><path d="M26 9C12 14 6 30 11 43C16 56 33 60 46 52C58 44 60 28 52 18C46 10 36 6 26 9Z" fill="url(#gMangoBlush)"/><path d="M27 9c1-4 4-6 7-6" stroke="#5c4a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M34 6c6-4 14-3 18 2-7 4-14 3-18-2z" fill="url(#gLeaf)"/><path d="M36 7c5-1 10 0 14 1" stroke="#1b6b2e" stroke-width="1" fill="none" opacity=".6"/><ellipse cx="21" cy="25" rx="6" ry="11" transform="rotate(25 21 25)" fill="url(#gShine)" opacity=".75"/></svg>',
@@ -328,6 +335,7 @@ var ICONS = [
   /* 7 caisse */
   '<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="7" fill="#b9792f" stroke="#6b3d12" stroke-width="3"/><rect x="9" y="9" width="46" height="46" rx="3" fill="#d29a4f" stroke="#8a5420" stroke-width="2"/><path d="M9 22h46M9 42h46" stroke="#8a5420" stroke-width="2.5"/><path d="M12 12l40 40M52 12L12 52" stroke="#8a5420" stroke-width="5" stroke-linecap="round"/><path d="M12 12l40 40M52 12L12 52" stroke="#e6b873" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#4b2a0c"/><circle cx="52" cy="12" r="2" fill="#4b2a0c"/><circle cx="12" cy="52" r="2" fill="#4b2a0c"/><circle cx="52" cy="52" r="2" fill="#4b2a0c"/></svg>'
 ];
+ICONS[8] = '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="18" ry="3" fill="#000" opacity=".2"/><path d="M12 18l20-9 20 9v28l-20 10-20-10z" fill="#bfe9ff" stroke="#6fbfe6" stroke-width="3" stroke-linejoin="round"/><path d="M12 18l20 9 20-9M32 27v29" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round" opacity=".85"/><path d="M18 22l6 3" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>';
 var CRACK = '<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="7" fill="#b9792f" stroke="#6b3d12" stroke-width="3"/><rect x="9" y="9" width="46" height="46" rx="3" fill="#d29a4f" stroke="#8a5420" stroke-width="2"/><path d="M9 22h46M9 42h46" stroke="#8a5420" stroke-width="2.5"/><path d="M12 12l40 40M52 12L12 52" stroke="#8a5420" stroke-width="5" stroke-linecap="round"/><path d="M12 12l40 40M52 12L12 52" stroke="#e6b873" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#4b2a0c"/><circle cx="52" cy="12" r="2" fill="#4b2a0c"/><circle cx="12" cy="52" r="2" fill="#4b2a0c"/><circle cx="52" cy="52" r="2" fill="#4b2a0c"/><path d="M30 6l-4 14 8 6-6 12 7 8-3 12" stroke="#2b1606" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/><path d="M30 6l-4 14 8 6-6 12 7 8-3 12" stroke="#fff" stroke-width="1" fill="none" opacity=".35"/></svg>';
 /* t = sortes de fruits, m = coups, g = fruits à ramasser, hn = forme du miel (hv = couches), cr = forme des caisses (ch = coups pour la casser) */
 var LEVELS = [
@@ -370,7 +378,27 @@ var LEVELS = [
   { t: 6, m: 50, hn: "diamond", hv: 2 },
   { t: 6, m: 45, hn: "cross", hv: 2, cr: "cc4" },
   { t: 6, m: 50, hn: "diamond", hv: 2, cr: "cc4" },
-  { t: 6, m: 55, hn: "bottom", cr: "dia4" }
+  { t: 6, m: 55, hn: "bottom", cr: "dia4" },
+  { t: 6, m: 28, ic: "ring1" },
+  { t: 6, m: 29, ic: "plus", hn: "cross" },
+  { t: 6, m: 32, ic: "plus" },
+  { t: 6, m: 32, ic: "ring1", hn: "center" },
+  { t: 6, m: 36, ic: "plus", hn: "top" },
+  { t: 6, m: 47, ic: "cross", cr: "side4", ch: 3 },
+  { t: 6, m: 49, ic: "plus", cr: "cc4" },
+  { t: 6, m: 50, ic: "ring1", hn: "stripes" },
+  { t: 6, m: 56, ic: "ring2", hn: "diamond" },
+  { t: 6, m: 57, ic: "cross", cr: "ring8" },
+  { t: 6, m: 60, ic: "plus", hn: "corners" },
+  { t: 6, m: 61, ic: "ring1", cr: "cc4" },
+  { t: 6, m: 61, ic: "cross" },
+  { t: 6, m: 62, ic: "ring1", cr: "x9", ch: 3 },
+  { t: 6, m: 62, ic: "plus", cr: "cc4", hn: "cols" },
+  { t: 6, m: 69, ic: "plus", cr: "dia4", ch: 3, hn: "stripes" },
+  { t: 6, m: 70, ic: "plus", cr: "x9", ch: 3, hn: "top", hv: 2 },
+  { t: 6, m: 70, ic: "plus", hn: "checker" },
+  { t: 6, m: 70, ic: "ring1", hn: "bottom" },
+  { t: 6, m: 70, ic: "ring2" }
 ];
 
 /* Formes du miel (cases où le miel est posé) et des caisses (cases bloquées) */
@@ -388,7 +416,12 @@ var HONEY_PATS = {
   ring2: function (r, c) { return Math.max(Math.abs(r - 3), Math.abs(c - 3)) === 2; },
   corners: function (r, c) { return (r < 2 || r > 4) && (c < 2 || c > 4); },
   plus: function (r, c) { return Math.abs(r - 3) + Math.abs(c - 3) <= 1; },
-  all: function () { return true; }
+  all: function () { return true; },
+  ring1: function (r, c) { return Math.max(Math.abs(r - 3), Math.abs(c - 3)) === 1; },
+  tri: function (r, c) { return r + c <= 4; },
+  rows3: function (r) { return r === 1 || r === 3 || r === 5; },
+  halfL: function (r, c) { return c <= 1; },
+  thickx: function (r, c) { return Math.abs(r - c) <= 1 || Math.abs(r + c - 6) <= 1; }
 };
 var CRATE_PATS = {
   cc4: [[0, 0], [0, 6], [6, 0], [6, 6]],
@@ -402,23 +435,28 @@ var CRATE_PATS = {
   x9: [[1, 1], [1, 5], [2, 2], [2, 4], [3, 3], [4, 2], [4, 4], [5, 1], [5, 5]]
 };
 function layoutOf(L) {
-  var honey = [], crate = [], r, c;
-  for (r = 0; r < N; r++) { honey[r] = []; crate[r] = []; for (c = 0; c < N; c++) { honey[r][c] = 0; crate[r][c] = 0; } }
+  var honey = [], crate = [], ice = [], r, c;
+  for (r = 0; r < N; r++) { honey[r] = []; crate[r] = []; ice[r] = []; for (c = 0; c < N; c++) { honey[r][c] = 0; crate[r][c] = 0; ice[r][c] = 0; } }
   if (L.cr) CRATE_PATS[L.cr].forEach(function (p) { crate[p[0]][p[1]] = L.ch || 2; });
   if (L.hn) {
     for (r = 0; r < N; r++) for (c = 0; c < N; c++) {
       if (HONEY_PATS[L.hn](r, c) && !crate[r][c]) honey[r][c] = L.hv || 1;
     }
   }
-  return { honey: honey, crate: crate };
+  if (L.ic) {
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) { if (HONEY_PATS[L.ic](r, c) && !crate[r][c]) ice[r][c] = 1; }
+  }
+  return { honey: honey, crate: crate, ice: ice };
 }
 /* Tous les objectifs d'un niveau : fruits (0 à 5), miel (6), caisses (7) */
 function goalsOf(n) {
   var L = LEVELS[n - 1], g = {}, lay = layoutOf(L), r, c, h = 0, k = 0;
   Object.keys(L.g || {}).forEach(function (t) { g[t] = L.g[t]; });
-  for (r = 0; r < N; r++) for (c = 0; c < N; c++) { if (lay.honey[r][c]) h++; if (lay.crate[r][c]) k++; }
+  var ic = 0;
+  for (r = 0; r < N; r++) for (c = 0; c < N; c++) { if (lay.honey[r][c]) h++; if (lay.crate[r][c]) k++; if (lay.ice[r][c]) ic++; }
   if (h) g[6] = h;
   if (k) g[7] = k;
+  if (ic) g[8] = ic;
   return g;
 }
 
@@ -550,7 +588,7 @@ var Snd = (function () {
 
 var $ = function (id) { return document.getElementById(id); };
 var board = $("board");
-var grid = [], honey = [], honeyEl = [], level = 0, moves = 0, score = 0, goal = [0, 0, 0, 0, 0, 0, 0, 0], goalTypes = [];
+var grid = [], honey = [], honeyEl = [], level = 0, moves = 0, score = 0, goal = [0, 0, 0, 0, 0, 0, 0, 0, 0], goalTypes = [];
 var busy = false, over = false, sel = null, drag = null, toastTimer = null;
 
 function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
@@ -608,6 +646,7 @@ function howModal() {
     '<div class="hw">' + demo("x", 4) + "<span><b>Forme en L ou en T</b> : une explosion autour du fruit.</span></div>" +
     '<div class="hw"><div class="demo"><div class="face t0">' + ICONS[0] + '</div><div class="hn hn1"></div></div><span><b>Miel</b> : fais un alignement sur la case pour le nettoyer. Le miel épais demande deux alignements.</span></div>' +
     '<div class="hw"><div class="demo"><div class="face crate-face">' + ICONS[7] + '</div></div><span><b>Caisse</b> : elle ne bouge pas. Fais un alignement juste à côté pour la casser.</span></div>' +
+    '<div class="hw"><div class="demo"><div class="face t2">' + ICONS[2] + '</div><div class="demo ice-demo"></div></div><span><b>Glace</b> : un fruit gelé ne bouge pas. Aligne-le avec d\'autres fruits pour casser la glace.</span></div>' +
     '<div class="hw"><span>Ramasse les fruits demandés avant la fin des coups pour gagner jusqu\'à 3 étoiles.</span></div>' +
     '</div><button class="btn btn-main" id="ok" type="button">Compris</button>');
   $("ok").onclick = closeModal;
@@ -725,7 +764,8 @@ function setType(t, type) {
 }
 /* Sorte du fruit d'une case, ou -1 si la case est vide ou une caisse (une caisse ne s'aligne jamais) */
 function T(r, c) { var t = grid[r][c]; return t && !t.crate ? t.type : -1; }
-function isFruit(r, c) { var t = grid[r][c]; return !!t && !t.crate; }
+/* Fruit qu'on peut déplacer : ni caisse, ni fruit pris dans la glace */
+function isFruit(r, c) { var t = grid[r][c]; return !!t && !t.crate && !t.ice; }
 
 function findMatches() {
   var cells = {}, groups = [], runs = [], r, c, k, j, i, cs;
@@ -772,7 +812,7 @@ function hasMoves() {
 }
 function reshuffle() {
   var tiles = [], r, c, tries = 0;
-  for (r = 0; r < N; r++) for (c = 0; c < N; c++) { if (isFruit(r, c)) tiles.push(grid[r][c]); }
+  for (r = 0; r < N; r++) for (c = 0; c < N; c++) { if (grid[r][c] && !grid[r][c].crate) tiles.push(grid[r][c]); }
   do {
     for (r = 0; r < N; r++) for (c = 0; c < N; c++) {
       var t0 = grid[r][c], ty;
@@ -813,6 +853,7 @@ function newBoard(L) {
       } while ((c >= 2 && T(r, c - 1) === type && T(r, c - 2) === type) ||
                (r >= 2 && T(r - 1, c) === type && T(r - 2, c) === type));
       grid[r][c] = makeTile(type, r, c, r - N);
+      if (lay.ice[r][c]) { grid[r][c].ice = true; grid[r][c].el.classList.add("ice"); }
     }
   }
   if (!hasMoves()) reshuffle();
@@ -821,7 +862,7 @@ function newBoard(L) {
 /* ---------- Effets : étincelles, confettis, points qui s'envolent ---------- */
 var FX = (function () {
   var cv = null, cx = null, parts = [], raf = 0, dpr = 1, W = 0, H = 0, last = 0, tried = false, reduce = false;
-  var COL = ["#ff9a2e", "#ffd43b", "#c8e04b", "#e8590c", "#b07a48", "#ff7a1a", "#ffd43b", "#c99a62"];
+  var COL = ["#ff9a2e", "#ffd43b", "#c8e04b", "#e8590c", "#b07a48", "#ff7a1a", "#ffd43b", "#c99a62", "#9ad8ff"];
   var CONF = ["#ff6b6b", "#ffd43b", "#69db7c", "#4dabf7", "#f783ac", "#ff9a2e", "#ffffff"];
   try { reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) {}
 
@@ -1061,7 +1102,9 @@ var THEMES = [
   { name: "La jungle", deco: '<svg class="bot" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice"><path d="M0 220V120C30 100 55 70 90 60c-25 25-30 45-25 60 20-25 45-40 70-45-20 20-28 40-25 60 15-15 30-22 50-24V220z" fill="#0c3a22" opacity=".85"/><path d="M400 220V110c-30-18-55-48-92-58 25 25 32 45 27 60-20-25-45-40-72-45 20 20 28 40 25 60-15-15-30-22-50-24V220z" fill="#0c3a22" opacity=".85"/><circle cx="330" cy="40" r="30" fill="#ffe08a" opacity=".12"/></svg>' },
   { name: "La plage", deco: '<svg class="top" viewBox="0 0 400 220" preserveAspectRatio="xMaxYMin slice"><circle cx="330" cy="150" r="42" fill="#ffe08a" opacity=".28"/><circle cx="330" cy="150" r="26" fill="#fff3bf" opacity=".5"/></svg><svg class="bot" viewBox="0 0 400 140" preserveAspectRatio="xMidYMax slice"><path d="M0 70c40-20 80 20 130 0s90-20 140 0 90 20 130 0V140H0z" fill="#0f6b7c" opacity=".55"/><path d="M0 100c50-18 90 16 140 0s100-18 150 0 80 14 110 0V140H0z" fill="#f2d9a0" opacity=".35"/></svg>' },
   { name: "Le marché d'Abidjan", deco: '<svg class="bot" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice"><circle cx="200" cy="200" r="90" fill="#ffb347" opacity=".35"/><path d="M0 200V150h24v-30h22v30h18V100h26v50h20v-38h24v38h16V130h28v20h14V90h30v60h18v-28h22v28h20v-44h26v44h20V200z" fill="#1d0a22" opacity=".8"/></svg>' },
-  { name: "La nuit étoilée", deco: '<svg class="top" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice"><circle cx="330" cy="150" r="22" fill="#fff3bf" opacity=".85"/><circle cx="340" cy="143" r="20" fill="#0b1240"/><g fill="#fff"><circle cx="40" cy="40" r="1.6" opacity=".8"/><circle cx="90" cy="90" r="1.2" opacity=".6"/><circle cx="150" cy="30" r="1.8" opacity=".9"/><circle cx="210" cy="110" r="1.2" opacity=".5"/><circle cx="260" cy="45" r="1.5" opacity=".7"/><circle cx="60" cy="160" r="1.3" opacity=".5"/><circle cx="360" cy="150" r="1.6" opacity=".7"/><circle cx="130" cy="200" r="1.1" opacity=".4"/><circle cx="290" cy="230" r="1.4" opacity=".5"/><circle cx="20" cy="250" r="1.4" opacity=".5"/></g></svg>' }
+  { name: "La nuit étoilée", deco: '<svg class="top" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice"><circle cx="330" cy="150" r="22" fill="#fff3bf" opacity=".85"/><circle cx="340" cy="143" r="20" fill="#0b1240"/><g fill="#fff"><circle cx="40" cy="40" r="1.6" opacity=".8"/><circle cx="90" cy="90" r="1.2" opacity=".6"/><circle cx="150" cy="30" r="1.8" opacity=".9"/><circle cx="210" cy="110" r="1.2" opacity=".5"/><circle cx="260" cy="45" r="1.5" opacity=".7"/><circle cx="60" cy="160" r="1.3" opacity=".5"/><circle cx="360" cy="150" r="1.6" opacity=".7"/><circle cx="130" cy="200" r="1.1" opacity=".4"/><circle cx="290" cy="230" r="1.4" opacity=".5"/><circle cx="20" cy="250" r="1.4" opacity=".5"/></g></svg>' },
+  { name: "La savane", deco: '<svg class="bot" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice"><circle cx="90" cy="150" r="60" fill="#ffd27a" opacity=".3"/><path d="M0 200V170c60-14 120-10 200 0s140 8 200-6V200z" fill="#4a2c06" opacity=".75"/><path d="M290 170v-40M290 135c-22-4-34-16-40-26 20 4 34 8 40 20 6-12 20-18 40-20-6 10-18 22-40 26z" fill="#2a1703" opacity=".85" stroke="#2a1703" stroke-width="3"/></svg>' },
+  { name: "Le royaume de glace", deco: '<svg class="bot" viewBox="0 0 400 180" preserveAspectRatio="xMidYMax slice"><path d="M0 180V120l40-50 36 50 34-70 44 80 40-60 46 70 36-56 44 66 40-40 40 40V180z" fill="#cfeeff" opacity=".28"/><path d="M0 180V145l60-34 50 34 60-46 60 50 70-40 50 36 50-30V180z" fill="#ffffff" opacity=".2"/></svg><svg class="top" viewBox="0 0 400 200" preserveAspectRatio="xMidYMin slice"><g fill="#fff"><circle cx="50" cy="40" r="2" opacity=".7"/><circle cx="130" cy="90" r="1.6" opacity=".6"/><circle cx="220" cy="30" r="2.2" opacity=".8"/><circle cx="310" cy="80" r="1.8" opacity=".6"/><circle cx="360" cy="20" r="1.6" opacity=".7"/><circle cx="20" cy="130" r="1.5" opacity=".5"/></g></svg>' }
 ];
 var curTheme = -1;
 function themeOf(n) { return Math.min(THEMES.length - 1, Math.floor((n - 1) / 10)); }
@@ -1081,7 +1124,7 @@ function startLevel(n) {
   level = n; var L = LEVELS[n - 1];
   moves = L.m; score = 0; over = false; sel = null; busy = true;
   NT = L.t || 5;
-  goal = [0, 0, 0, 0, 0, 0, 0, 0]; goalTypes = [];
+  goal = [0, 0, 0, 0, 0, 0, 0, 0, 0]; goalTypes = [];
   var GO = goalsOf(n);
   Object.keys(GO).forEach(function (k) { goal[k] = GO[k]; goalTypes.push(parseInt(k, 10)); });
   show("game");
@@ -1124,7 +1167,7 @@ function swapTiles(a, b) {
 }
 function adjacent(a, b) { return Math.abs(a.r - b.r) + Math.abs(a.c - b.c) === 1; }
 function tap(t) {
-  if (t.crate) return;
+  if (t.crate || t.ice) return;
   if (!sel) { select(t); return; }
   if (sel === t) { clearSel(); return; }
   if (adjacent(sel, t)) { trySwap(sel, t); return; }
@@ -1132,7 +1175,7 @@ function tap(t) {
 }
 
 async function trySwap(a, b) {
-  if (busy || over || !a || !b || a.crate || b.crate) return;
+  if (busy || over || !a || !b || a.crate || b.crate || a.ice || b.ice) return;
   busy = true; clearSel(); clearHint();
   var gid = gameId;
   Snd.play("swap");
@@ -1197,6 +1240,11 @@ async function resolve(forced, swapped) {
     res.runs.forEach(function (run) {
       if (run.cells.length < 4) return;
       var p = pickCell(run, swapped), k = p[0] * N + p[1];
+      if (grid[p[0]][p[1]].ice) {
+        var alt = run.cells.filter(function (q) { return !grid[q[0]][q[1]].ice; });
+        if (!alt.length) return;
+        p = alt[Math.floor(alt.length / 2)]; k = p[0] * N + p[1];
+      }
       if (grid[p[0]][p[1]].sp) return;
       var sp = run.cells.length >= 5 ? "b" : (run.dir === "h" ? "h" : "v");
       if (!madeAt[k] || rank[sp] > rank[madeAt[k]]) madeAt[k] = sp;
@@ -1204,7 +1252,7 @@ async function resolve(forced, swapped) {
     Object.keys(inH).forEach(function (k) {
       if (inV[k] && !madeAt[k]) {
         var tt0 = grid[Math.floor(k / N)][k % N];
-        if (!tt0.sp) madeAt[k] = "x";
+        if (!tt0.sp && !tt0.ice) madeAt[k] = "x";
       }
     });
     Object.keys(res.cells).forEach(function (k) { add(Math.floor(k / N), k % N); });
@@ -1233,6 +1281,13 @@ async function resolve(forced, swapped) {
     var popped = [], bonus = 0, brokeCrate = false, clearedHoney = false;
     keys.forEach(function (k) {
       var t = rem[k];
+      if (t.ice) {
+        t.ice = false; t.el.classList.remove("ice");
+        if (goal[8] > 0) goal[8]--;
+        bonus += 40;
+        FX.burst(t.r, t.c, 8, 12, 1.2);
+        return;
+      }
       if (goal[t.type] > 0) goal[t.type]--;
       if (honey[t.r][t.c] > 0) {
         honey[t.r][t.c]--;
